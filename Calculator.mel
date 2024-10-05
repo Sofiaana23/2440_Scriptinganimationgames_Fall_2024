@@ -1,0 +1,186 @@
+// Sum
+proc float Sum(float $input[])
+{
+    float $ret = $input[0];
+    for($i=1;$i<size($input);++$i)
+    {
+        $ret = $ret + $input[$i];
+    }
+    return $ret;
+}
+
+//Difference
+proc float Difference(float $input[])
+{
+    float $ret = $input[0];
+    for($i=1;$i<size($input);++$i)
+    {
+        $ret = $ret - $input[$i];
+    }
+    return $ret;
+}
+
+//Multiply
+proc float Multiply(float $input[])
+{
+    float $ret = $input[0];
+    for($i=1;$i<size($input);++$i)
+    {
+        $ret = $ret * $input[$i];
+    }
+    return $ret;
+}
+
+//Division
+proc float Division(float $input[])
+{
+    float $ret = $input[0];
+    for($i=1;$i<size($input);++$i)
+    {
+        $ret = $ret / $input[$i];
+    }
+    return $ret;
+}
+
+//Power
+proc float Power(float $base, float $pow)
+{
+    float $ret = 1;
+    for($i=0;$i<$pow;++$i)
+    {
+        $ret = $ret * $base;
+    }
+    return $ret;
+}
+
+//Average
+proc float Mean(float $input[])
+{
+    return Sum($input)/size($input);
+}
+
+//Median (Should this be sorted before starting?)
+proc float Median(float $input[])
+{
+    int $inputSize = size($input);
+    int $medianIndex = $inputSize/2;
+    // Sort Array
+    $inputSorted = sort($input);
+    
+    // Even Vs Odd List Size
+    if ($inputSize%2==1){
+        return $inputSorted[$medianIndex];
+    } 
+    else
+    {
+        float $x = $inputSorted[$medianIndex];
+        float $y = $inputSorted[$medianIndex-1];
+        return Mean({$x,$y});
+    }
+        
+}
+
+// Print will pretty print the results
+proc Print(float $input[], string $operation, float $res){
+    switch ($operation){
+        case " + ":
+        case " - ":
+        case " * ":
+        case " / ":
+        case " ^ ":
+            for($i=1;$i<size($input);++$i)
+            {
+                if ($i==1){
+                    print($input[0]);
+                }
+                print($operation);
+                print($input[$i]);
+            }
+            break;
+        case "average":
+        case "median":
+            print("The ");
+            print($operation);
+            print(" of ");
+            for($i=1;$i<size($input);++$i)
+            {
+                if ($i==1){
+                    print($input[0]);
+                }
+                if ( $i == size($input)-1 ){
+                    print(" and ");
+                } else {
+                    print(", ");
+                }
+                print($input[$i]);
+            }
+            break;
+        default:
+            print("Pretty Printing is not implemented yet for this operation\n");
+    }
+    print(" = ");
+    print($res);
+    print("\n");
+    
+}
+
+global proc float Calculator(float $input[], string $operation){
+    switch ($operation){
+        case "addition":
+            $res = Sum($input);
+            Print($input, " + ", $res);
+            break;
+        case "subtraction":
+            $res = Difference($input);
+            Print($input, " - ", $res);
+            break;
+        case "multiplication":
+            $res = Multiply($input);
+            Print($input, " * ", $res);
+            break;
+        case "division":
+            $res = Division($input);
+            Print($input, " / ", $res);
+            break;
+        case "exponentiate":
+            if (size($input) != 2){
+                print("Invalid operands for exponentiation");
+                print("\nThe exponentiation function can only accept 2 values in the input array");
+                return 0;
+            }
+            $res = Power($input[0], $input[1]);
+            Print($input, " ^ ", $res);
+            break;
+        case "average":
+            $res = Mean($input);
+            Print($input, $operation, $res);
+            break;
+        case "median":
+            $res = Median($input);
+            Print($input, $operation, $res);
+            break;
+        default:
+            print("Invalid operation type");
+            print("\nPlease try again with a supported operation type");
+            print("\nSupported operations are:\n\taddition\n\tsubtraction\n\tmultiplication\n\tdivision\n\texponentiate\n\taverage\n\tand median");
+    }
+    return $res;
+}
+
+Calculator({1,2,3,4,5,6,7,8,9,10}, "addition"); // 55
+
+Calculator({10,3,4,-3,-4}, "subtraction"); // 10
+
+Calculator({1,3,2,4,10}, "multiplication"); // 240
+
+Calculator({100,2,5,5}, "division"); // 2
+
+Calculator({2,3}, "exponentiate"); // 8
+
+Calculator({1,3,5,7,9}, "average"); // 5
+
+// 0, 1, 3, 3, |5| , 5, 7, 7, 9
+Calculator({1,3,5,3,5,7,9,7,0}, "median"); // 5
+
+// 0, 0, 1, 3, |3, 5| , 5, 7, 7, 9
+Calculator({1,3,5,3,5,7,9,7,0,0}, "median"); // 4
