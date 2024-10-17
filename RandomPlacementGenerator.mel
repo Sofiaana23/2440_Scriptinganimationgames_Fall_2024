@@ -1,0 +1,130 @@
+// Duplicate the selected object and move it to the designated random location
+proc Duplicate(string $object, float $x, float $y, float $z)
+{
+    print("Spawning object ");
+    print($object);
+    print(" at ");
+    print($x);
+    print(",");
+    print($y);
+    print(",");
+    print($z);
+    print("\n");
+    $new_object = `duplicate $object`;
+    // We're just creating one duplicate here, don't need to iterate over them here.
+    setAttr ($new_object[0] + ".translateX") $x;
+    setAttr ($new_object[0] + ".translateY") $y;
+    setAttr ($new_object[0] + ".translateZ") $z;
+
+}
+
+global proc SpawnUI(){
+
+    // Declare Globals for value paths
+    global string $dups_control_path;
+    global string $x_min_control_path;
+    global string $x_max_control_path;
+    global string $y_min_control_path;
+    global string $y_max_control_path;
+    global string $z_min_control_path;
+    global string $z_max_control_path;
+
+    // Delete window if it already exists
+    if (`window -exists spawner`){
+        deleteUI spawner;
+    }
+
+    window -title "Selected Object Spawner" -widthHeight 500 250 spawner;
+
+    rowColumnLayout -nc 4 -cw 1 100 -cw 2 100 -cw 3 100 -cw 4 100;
+    // Blank row for spacing
+    text -al "right" -label "";
+    text -al "right" -label "";
+    text -al "right" -label "";
+    text -al "right" -label "";
+
+    // Number of duplicates
+    text -al "right" -label "Duplicate Count: ";
+    $dups_control_path = `intField -editable true -value 1 -min 1`;
+
+    text -al "right" -label "";
+    text -al "right" -label "";
+
+    text -al "right" -label "Spawn Location  ";
+    text -al "right" -label "";
+    text -al "right" -label "";
+    text -al "right" -label "";
+
+    // X Values
+    text -al "right" -label "X Min: ";
+    $x_min_control_path = `floatField -editable true -value -10 -precision 4 -step .01`;
+    text -al "right" -label "X Max: ";
+    $x_max_control_path = `floatField -editable true -value 10 -precision 4 -step .01`;
+
+    // Y Values
+    text -al "right" -label "Y Min: ";
+    $y_min_control_path = `floatField -editable true -value -10 -precision 4 -step .01`;
+    text -al "right" -label "Y Max: ";
+    $y_max_control_path = `floatField -editable true -value 10 -precision 4 -step .01`;
+
+    // Z Values
+    text -al "right" -label "Z Min: ";
+    $z_min_control_path = `floatField -editable true -value -10 -precision 4 -step .01`;
+    text -al "right" -label "Z Max: ";
+    $z_max_control_path = `floatField -editable true -value 10 -precision 4 -step .01`;
+
+    // Blank row for spacing
+    text -al "right" -label "";
+    text -al "right" -label "";
+    text -al "right" -label "";
+    text -al "right" -label "";
+
+    // Button to create duplicates
+    text -al "right" -label "";
+    text -al "right" -label "";
+    text -al "right" -label "";
+    button -label "Spawn" -command ("SpawnObjects()");
+    // Display the Window
+    showWindow spawner;
+}
+
+global proc SpawnObjects()
+{
+    // Access globals from above
+    // Declare Globals
+    global string $dups_control_path;
+    global string $x_min_control_path;
+    global string $x_max_control_path;
+    global string $y_min_control_path;
+    global string $y_max_control_path;
+    global string $z_min_control_path;
+    global string $z_max_control_path;
+    
+    // Get values from paths
+    int $duplicates = `intField -q -v $dups_control_path`;
+    float $x_min = `floatField -q -v $x_min_control_path`;
+    float $x_max = `floatField -q -v $x_max_control_path`;
+    float $y_min = `floatField -q -v $y_min_control_path`;
+    float $y_max = `floatField -q -v $y_max_control_path`;
+    float $z_min = `floatField -q -v $z_min_control_path`;
+    float $z_max = `floatField -q -v $z_max_control_path`;
+
+    // Get Array of selected Objects
+    string $objects[] = `ls -selection`;
+    for($object in $objects)
+    {
+        print("Creating ");
+        print($duplicates);
+        print(" Duplicates of ");
+        print($object);
+        print("\n");
+
+        // Loop over duplicates
+        for ($i=0;$i<$duplicates;++$i)
+        {
+            Duplicate($object, `rand $x_min $x_max`, `rand $y_min $y_max`, `rand $z_min $z_max`);
+        }
+    }
+}
+
+SpawnUI();
