@@ -1,0 +1,192 @@
+proc AddSpaces(int $num){
+    for($i=0;$i<$num;++$i)
+    {
+        text -al "right" -label "";
+    }
+}
+
+proc AddSeparators(int $num){
+    for($i=0;$i<$num;++$i)
+    {
+        separator;
+    }
+}
+
+global proc SpawnUI(){
+
+    // Declare Global input number array
+    global string $numbersPath;
+    global string $resultPath;
+
+    // Delete window if it already exists
+    if (`window -exists spawner`){
+        deleteUI spawner;
+    }
+
+    window -title "Calculator UI" -rtf on spawner;
+
+    columnLayout -cw 400;
+    
+    rowLayout -nc 2 -cw 1 200 -cw 2 200;
+    text -al "right" -l "Comma Separated List of Numbers: ";
+    $numbersPath = `textField -w 200 -h 25 -editable true`;
+
+    setParent -u;
+    AddSpaces(1);
+
+    rowLayout -nc 2 -cw 1 200 -cw 2 200;
+    text -al "right" -label "Result: ";
+    $resultPath = `textField -fn "boldLabelFont" -w 100 -h 40 -ed off -tx "0"`;
+    
+    setParent -u;
+    AddSpaces(1);
+    AddSeparators(1);
+    AddSpaces(1);
+ 
+
+    rowLayout -nc 4 -cw 1 100 -cw 2 100 -cw 3 100 -cw 4 100; 
+    // Buttons to execute calculation
+    button -label "+" -w 100 -command ("Sum()");
+    button -label "-" -w 100 -command ("Difference()");
+    button -label "*" -w 100 -command ("Multiply()");
+    button -label "/" -w 100 -command ("Division()");
+    setParent -u;
+
+    rowLayout -nc 3 -cw 1 133 -cw 2 133 -cw 3 133; 
+    button -label "Average" -w 133 -command ("Mean()");
+    button -label "Median" -w 133 -command ("Median()");
+    button -label "Power" -w 133 -command ("Power()");
+  
+
+    // Display the Window
+    showWindow spawner;
+}
+
+proc float[] GetNumbers(){
+    global string $numbersPath;
+    string $input_string = `textField -q -tx $numbersPath`;
+    string $input_buffer[];
+    $num = `tokenize $input_string "," $input_buffer`;
+    float $input[];
+    int $i = 0;
+    for ($val in $input_buffer){
+        $input[$i++] = (float)$val;
+    }
+    return $input;
+}
+
+proc SetResult(float $res){
+    global string $resultPath;
+    print("Setting Result: ");
+    print($res);
+    print("\n");
+    string $result = (string)$res;
+    $updated = `textField -edit -text $res $resultPath`;
+}
+
+// Sum
+proc float _sum(float $input[])
+{
+    float $ret = $input[0];
+    for($i=1;$i<size($input);++$i)
+    {
+        $ret = $ret + $input[$i];
+    }
+    return $ret;
+}
+
+global proc Sum()
+{
+    float $input[] = GetNumbers();
+    float $ret = _sum($input);
+    SetResult($ret);
+}
+
+//Difference
+global proc Difference()
+{
+    float $input[] = GetNumbers();
+    float $ret = $input[0];
+    for($i=1;$i<size($input);++$i)
+    {
+        $ret = $ret - $input[$i];
+    }
+    SetResult($ret);
+}
+
+//Multiply
+global proc Multiply()
+{
+    float $input[] = GetNumbers();
+    float $ret = $input[0];
+    for($i=1;$i<size($input);++$i)
+    {
+        $ret = $ret * $input[$i];
+    }
+    SetResult($ret);
+}
+
+//Division
+global proc Division()
+{
+    float $input[] = GetNumbers();
+    float $ret = $input[0];
+    for($i=1;$i<size($input);++$i)
+    {
+        $ret = $ret / $input[$i];
+    }
+    SetResult($ret);
+}
+
+//Power
+global proc Power()
+{
+    float $input[] = GetNumbers();
+    float $base = $input[0];
+    float $pow = $input[1];
+    float $ret = 1;
+    for($i=0;$i<$pow;++$i)
+    {
+        $ret = $ret * $base;
+    }
+    SetResult($ret);
+}
+
+//Average
+proc float _mean(float $input[]){
+    float $ret = _sum($input)/size($input);
+    return $ret;
+}
+
+global proc Mean()
+{
+    float $input[] = GetNumbers();
+    float $ret = _mean($input);
+    SetResult($ret);
+}
+
+//Median (Should this be sorted before starting?)
+global proc Median()
+{
+    float $input[] = GetNumbers();
+    int $inputSize = size($input);
+    int $medianIndex = $inputSize/2;
+    // Sort Array
+    $inputSorted = sort($input);
+    
+    // Even Vs Odd List Size
+    if ($inputSize%2==1){
+        float $ret = $inputSorted[$medianIndex];
+        SetResult($ret);
+    } 
+    else
+    {
+        float $x = $inputSorted[$medianIndex];
+        float $y = $inputSorted[$medianIndex-1];
+        float $ret = _mean({$x,$y});
+        SetResult($ret);
+    }
+        
+}
+
+SpawnUI();
